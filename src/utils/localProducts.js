@@ -53,16 +53,29 @@ export const addLocalProduct = (product) => {
     category: product.category || '',
     brand: product.brand || '',
     rating: Number(product.rating) || 0,
+    // ✅ Use uploaded image if provided; otherwise a placeholder
     thumbnail:
       product.thumbnail ||
       'https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/thumbnail.png',
-    images: Array.isArray(product.images) ? product.images : [],
+    images: Array.isArray(product.images) && product.images.length > 0
+      ? product.images
+      : (product.thumbnail ? [product.thumbnail] : []),
     reviews: Array.isArray(product.reviews) ? product.reviews : [],
     __local: true,
   };
 
   data.added = [stored, ...data.added];
-  write(data);
+
+
+  try {
+    write(data);
+  } catch (err) {
+    if (err.name === 'QuotaExceededError' || /quota/i.test(err.message)) {
+      throw new Error('Storage is full. Delete some local products or remove images.');
+    }
+    throw err;
+  }
+
   return stored;
 };
 

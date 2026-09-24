@@ -76,7 +76,7 @@ export const deleteProduct = async (id) => {
   cache.clear();
   const numericId = Number(id);
   if (Number.isInteger(numericId) && numericId >= 10_000) {
-    // Local products: no API call needed
+
     return Promise.resolve({ isDeleted: true, id: numericId });
   }
   const { data } = await axiosInstance.delete(`/products/${id}`);

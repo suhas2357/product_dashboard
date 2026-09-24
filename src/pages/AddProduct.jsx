@@ -31,39 +31,30 @@ const AddProduct = () => {
     return () => controller.abort();
   }, []);
 
-  const handleSubmit = useCallback(
-    async (values) => {
-      if (submittingRef.current) return;
-      submittingRef.current = true;
-      setSubmitting(true);
-      setError("");
+ const handleSubmit = useCallback(async (values) => {
+  if (submittingRef.current) return;
+  submittingRef.current = true;
+  setSubmitting(true);
+  setError('');
 
-      try {
-        // 1) Call the real endpoint (matches a real backend flow)
-        const apiResult = await addProduct(values);
+  try {
+    const apiResult = await addProduct(values);
+    const stored = addLocalProduct({
+      ...values,
+      ...(apiResult && typeof apiResult === 'object' ? apiResult : {}),
+      ...values,
+    });
 
-        // 2) Persist locally so the product shows in the list
-        const stored = addLocalProduct({
-          ...values,
-          ...(apiResult && typeof apiResult === "object" ? apiResult : {}),
-          ...values, // local values win over the echo
-        });
-
-        navigate("/products", {
-          state: {
-            toast: `"${stored.title}" added successfully.`,
-            newProductId: stored.id,
-          },
-        });
-      } catch (err) {
-        setError(getErrorMessage(err));
-      } finally {
-        submittingRef.current = false;
-        setSubmitting(false);
-      }
-    },
-    [navigate],
-  );
+    navigate('/products', {
+      state: { toast: `"${stored.title}" added successfully.`, newProductId: stored.id },
+    });
+  } catch (err) {
+    setError(err.message || getErrorMessage(err));
+  } finally {
+    submittingRef.current = false;
+    setSubmitting(false);
+  }
+}, [navigate]);
 
   return (
     <div>

@@ -27,7 +27,7 @@ import {
   SEARCH_DELAY_MS,
 } from "../utils/constants.js";
 import { parsePositiveInt } from "../utils/pagination.js";
-import { applyOverlay, deleteLocalProduct } from "../utils/localProducts.js";
+import {  deleteLocalProduct } from "../utils/localProducts.js";
 
 const ConfirmModal = lazy(
   () => import("../components/common/ConfirmModel.jsx"),
@@ -189,8 +189,8 @@ const Products = () => {
   setDeleting(true);
   try {
     await deleteProduct(deleteTarget.id);
-    deleteLocalProduct(deleteTarget.id);   // persist locally
-    retry();                                // ⬅️ refetch — the overlay filters it out
+    deleteLocalProduct(deleteTarget.id); 
+    retry();                                
     setToast(`"${deleteTarget.title}" deleted successfully.`);
     setDeleteTarget(null);
   } catch (err) {
