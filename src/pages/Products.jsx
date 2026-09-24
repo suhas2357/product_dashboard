@@ -27,7 +27,7 @@ import {
   SEARCH_DELAY_MS,
 } from "../utils/constants.js";
 import { parsePositiveInt } from "../utils/pagination.js";
-import {  deleteLocalProduct } from "../utils/localProducts.js";
+import { deleteLocalProduct } from "../utils/localProducts.js";
 
 const ConfirmModal = lazy(
   () => import("../components/common/ConfirmModel.jsx"),
@@ -115,10 +115,10 @@ const Products = () => {
     pageSize,
     search,
     category,
+    sort,
   });
 
-
-  const visibleProducts = useMemo(() => sortProducts(products, sort), [products, sort]);
+  const visibleProducts = products;
 
   // ---- Handlers ----
   const handlePageChange = useCallback(
@@ -185,20 +185,20 @@ const Products = () => {
   const handleCancelDelete = useCallback(() => setDeleteTarget(null), []);
 
   const handleConfirmDelete = useCallback(async () => {
-  if (!deleteTarget || deleting) return;
-  setDeleting(true);
-  try {
-    await deleteProduct(deleteTarget.id);
-    deleteLocalProduct(deleteTarget.id); 
-    retry();                                
-    setToast(`"${deleteTarget.title}" deleted successfully.`);
-    setDeleteTarget(null);
-  } catch (err) {
-    setToast(getErrorMessage(err));
-  } finally {
-    setDeleting(false);
-  }
-}, [deleteTarget, deleting, retry]);
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await deleteProduct(deleteTarget.id); 
+      deleteLocalProduct(deleteTarget.id); 
+      retry(); 
+      setToast(`"${deleteTarget.title}" deleted successfully.`);
+      setDeleteTarget(null);
+    } catch (err) {
+      setToast(getErrorMessage(err));
+    } finally {
+      setDeleting(false);
+    }
+  }, [deleteTarget, deleting, retry]);
 
   useEffect(() => {
     if (!toast) return;

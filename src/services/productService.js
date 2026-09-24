@@ -82,3 +82,13 @@ export const deleteProduct = async (id) => {
   const { data } = await axiosInstance.delete(`/products/${id}`);
   return data;
 };
+
+export const fetchAllProducts = ({ signal } = {}) => {
+  return withCache(cacheKey('allProducts', {}), async () => {
+    const { data } = await axiosInstance.get('/products', {
+      params: { limit: 200, skip: 0 },
+      signal,
+    });
+    return data;
+  });
+};
