@@ -5,12 +5,21 @@ import {
   fetchProductsByCategory,
 } from '../services/productService.js';
 import { getErrorMessage } from '../services/api/apiErrorHandler.js';
+import { getOverlay } from '../utils/localProducts.js';
 
-/**
- * Fetches products based on query params.
- * - Uses AbortController so old requests can't overwrite newer ones.
- * - Falls back across search / category / plain list.
- */
+/** Filter + format local products so they match API shape. */
+const matchLocal = (overlay, { search, category }) => {
+  const q = search.trim().toLowerCase();
+  const cat = category.trim().toLowerCase();
+
+  return overlay.added.filter((p) => {
+    if (cat && String(p.category).toLowerCase() !== cat) return false;
+    if (!q) return true;
+    const haystack = `${p.title} ${p.description} ${p.brand} ${p.category}`.toLowerCase();
+    return haystack.includes(q);
+  });
+};
+
 export const useProducts = ({ page, pageSize, search, category }) => {
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
@@ -22,12 +31,10 @@ export const useProducts = ({ page, pageSize, search, category }) => {
   const requestIdRef = useRef(0);
 
   const load = useCallback(async () => {
-    // Cancel any in-flight request
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    // Increment request id; only latest wins
     const requestId = ++requestIdRef.current;
 
     setLoading(true);
@@ -38,47 +45,51 @@ export const useProducts = ({ page, pageSize, search, category }) => {
     try {
       let data;
       if (search) {
-        // Search takes priority — DummyJSON can't combine search + category
         data = await searchProducts({
-          q: search,
-          limit: pageSize,
-          skip,
-          signal: controller.signal,
+          q: search, limit: pageSize, skip, signal: controller.signal,
         });
       } else if (category) {
         data = await fetchProductsByCategory({
-          category,
-          limit: pageSize,
-          skip,
+          category, limit: pageSize, skip, signal: controller.signal,
         });
       } else {
         data = await fetchProducts({ limit: pageSize, skip });
       }
 
-      // Ignore stale responses
       if (requestId !== requestIdRef.current) return;
 
-      setProducts(data.products || []);
-      setTotal(data.total || 0);
+      const overlay = getOverlay();
+
+      // ✅ Always merge local matches (only meaningful on page 1)
+      let apiProducts = data.products || [];
+      let apiTotal = data.total || 0;
+
+      if (page === 1) {
+        const localMatches = matchLocal(overlay, { search, category });
+        // Add only those local products not already shown on this page
+        const shownIds = new Set(apiProducts.map((p) => Number(p.id)));
+        const extra = localMatches.filter((p) => !shownIds.has(Number(p.id)));
+
+        apiProducts = [...extra, ...apiProducts];
+        apiTotal = apiTotal + extra.length;
+      }
+
+      setProducts(apiProducts);
+      setTotal(apiTotal);
     } catch (err) {
-      // Ignore aborted requests
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
       if (requestId !== requestIdRef.current) return;
       setError(getErrorMessage(err));
       setProducts([]);
       setTotal(0);
     } finally {
-      if (requestId === requestIdRef.current) {
-        setLoading(false);
-      }
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [page, pageSize, search, category]);
 
   useEffect(() => {
     load();
-    return () => {
-      if (abortRef.current) abortRef.current.abort();
-    };
+    return () => { if (abortRef.current) abortRef.current.abort(); };
   }, [load, reloadKey]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);

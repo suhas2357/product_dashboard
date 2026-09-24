@@ -1,24 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import Button from '../common/Button.jsx';
-import { validateProduct } from '../../utils/validators.js';
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import Button from "../common/Button.jsx";
+import { validateProduct } from "../../utils/validators.js";
 
 const EMPTY_PRODUCT = {
-  title: '',
-  description: '',
-  price: '',
-  stock: '',
-  category: '',
-  brand: '',
+  title: "",
+  description: "",
+  price: "",
+  stock: "",
+  category: "",
+  brand: "",
 };
 
 const mapInitialValues = (values) => ({
-  title: values.title || '',
-  description: values.description || '',
-  price: values.price ?? '',
-  stock: values.stock ?? '',
-  category: values.category || '',
-  brand: values.brand || '',
+  title: values.title || "",
+  description: values.description || "",
+  price: values.price ?? "",
+  stock: values.stock ?? "",
+  category: values.category || "",
+  brand: values.brand || "",
 });
 
 const ProductForm = ({
@@ -26,25 +25,22 @@ const ProductForm = ({
   categories,
   onSubmit,
   submitting,
-  submitLabel = 'Save',
+  submitLabel = "Save",
 }) => {
   const [form, setForm] = useState(() =>
-    initialValues ? mapInitialValues(initialValues) : EMPTY_PRODUCT
+    initialValues ? mapInitialValues(initialValues) : EMPTY_PRODUCT,
   );
   const [errors, setErrors] = useState({});
-
 
   const appliedValuesRef = useRef(initialValues);
 
   useEffect(() => {
-
     const prev = appliedValuesRef.current;
     const next = initialValues;
 
     if (!next) return;
 
-    const sameProduct =
-      prev && next && (prev.id === next.id || prev === next);
+    const sameProduct = prev && next && (prev.id === next.id || prev === next);
 
     if (sameProduct) return;
 
@@ -53,13 +49,11 @@ const ProductForm = ({
     setErrors({});
   }, [initialValues]);
 
- 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
 
     setForm((prev) => ({ ...prev, [name]: value }));
 
-   
     setErrors((prev) => {
       if (!prev[name]) return prev;
       const next = { ...prev };
@@ -68,7 +62,6 @@ const ProductForm = ({
     });
   }, []);
 
-  
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
@@ -89,16 +82,15 @@ const ProductForm = ({
         brand: form.brand.trim(),
       });
     },
-    [form, submitting, onSubmit]
+    [form, submitting, onSubmit],
   );
 
- 
   const fieldClass = useCallback(
     (name) =>
       `w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-        errors[name] ? 'border-red-400' : 'border-gray-300'
+        errors[name] ? "border-red-400" : "border-gray-300"
       }`,
-    [errors]
+    [errors],
   );
 
   return (
@@ -108,7 +100,10 @@ const ProductForm = ({
       noValidate
     >
       <div>
-        <label htmlFor="product-title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="product-title"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Title *
         </label>
         <input
@@ -116,12 +111,14 @@ const ProductForm = ({
           name="title"
           value={form.title}
           onChange={handleChange}
-          className={fieldClass('title')}
+          className={fieldClass("title")}
           placeholder="Product title"
           autoComplete="off"
           disabled={submitting}
         />
-        {errors.title && <p className="text-red-600 text-xs mt-1">{errors.title}</p>}
+        {errors.title && (
+          <p className="text-red-600 text-xs mt-1">{errors.title}</p>
+        )}
       </div>
 
       <div>
@@ -137,7 +134,7 @@ const ProductForm = ({
           value={form.description}
           onChange={handleChange}
           rows={4}
-          className={fieldClass('description')}
+          className={fieldClass("description")}
           placeholder="Describe the product"
           disabled={submitting}
         />
@@ -148,7 +145,10 @@ const ProductForm = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="product-price"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Price *
           </label>
           <input
@@ -159,16 +159,21 @@ const ProductForm = ({
             onChange={handleChange}
             min="0"
             step="0.01"
-            className={fieldClass('price')}
+            className={fieldClass("price")}
             placeholder="0.00"
             inputMode="decimal"
             disabled={submitting}
           />
-          {errors.price && <p className="text-red-600 text-xs mt-1">{errors.price}</p>}
+          {errors.price && (
+            <p className="text-red-600 text-xs mt-1">{errors.price}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="product-stock" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="product-stock"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Stock *
           </label>
           <input
@@ -179,12 +184,14 @@ const ProductForm = ({
             onChange={handleChange}
             min="0"
             step="1"
-            className={fieldClass('stock')}
+            className={fieldClass("stock")}
             placeholder="0"
             inputMode="numeric"
             disabled={submitting}
           />
-          {errors.stock && <p className="text-red-600 text-xs mt-1">{errors.stock}</p>}
+          {errors.stock && (
+            <p className="text-red-600 text-xs mt-1">{errors.stock}</p>
+          )}
         </div>
       </div>
 
@@ -196,30 +203,35 @@ const ProductForm = ({
           >
             Category *
           </label>
-          <input
+          <select
             id="product-category"
             name="category"
             value={form.category}
             onChange={handleChange}
-            className={fieldClass('category')}
-            placeholder="e.g. smartphones"
-            list="category-options"
-            autoComplete="off"
+            className={fieldClass("category")}
             disabled={submitting}
-          />
-          <datalist id="category-options">
+          >
+            <option value="">Select a category…</option>
             {categories.map((c) => {
-              const value = typeof c === 'string' ? c : c.slug;
-              return <option key={value} value={value} />;
+              const value = typeof c === "string" ? c : c.slug;
+              const label = typeof c === "string" ? c : c.name || c.slug;
+              return (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              );
             })}
-          </datalist>
+          </select>
           {errors.category && (
             <p className="text-red-600 text-xs mt-1">{errors.category}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="product-brand" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="product-brand"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Brand *
           </label>
           <input
@@ -227,23 +239,24 @@ const ProductForm = ({
             name="brand"
             value={form.brand}
             onChange={handleChange}
-            className={fieldClass('brand')}
+            className={fieldClass("brand")}
             placeholder="Brand name"
             autoComplete="off"
             disabled={submitting}
           />
-          {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand}</p>}
+          {errors.brand && (
+            <p className="text-red-600 text-xs mt-1">{errors.brand}</p>
+          )}
         </div>
       </div>
 
       <div className="flex justify-end pt-2">
         <Button type="submit" loading={submitting}>
-          {submitting ? 'Saving...' : submitLabel}
+          {submitting ? "Saving..." : submitLabel}
         </Button>
       </div>
     </form>
   );
 };
-
 
 export default ProductForm;

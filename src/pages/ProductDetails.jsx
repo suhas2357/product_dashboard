@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState ,memo} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Loader from '../components/common/Loader.jsx';
 import ErrorMessage from '../components/common/ErrorMessage.jsx';
@@ -87,7 +87,13 @@ const ProductDetails = () => {
   }, [load]);
 
   // ---- Stable handlers ----
-  const handleBack = useCallback(() => navigate('/products'), [navigate]);
+  const handleBack = useCallback(() => {
+  if (window.history.length > 1) {
+    navigate(-1);
+  } else {
+    navigate('/products');
+  }
+}, [navigate]);
 
   const handleEdit = useCallback(() => {
     // Guard: only navigate if we actually have an id
