@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState ,memo} from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Loader from '../components/common/Loader.jsx';
 import ErrorMessage from '../components/common/ErrorMessage.jsx';
@@ -242,4 +242,4 @@ const ProductDetails = () => {
   );
 };
 
-export default React.memo(ProductDetails);
+export default ProductDetails;
